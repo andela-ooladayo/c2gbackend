@@ -2,6 +2,8 @@ var _ = require('lodash'),
     moment = require('moment'),
     passport = require('passport'),
     pg = require('pg'),
+    mailer = require('./email.server'),
+    registrationEmailTemplate = require('../../emails/registration'),
     connectionString = process.env.DATABASE_URL || "postgres://localhost:5432/cgdb";
 
 //return User
@@ -31,10 +33,16 @@ exports.update = function(req, res) {
                     var selectSql = "SELECT * FROM users WHERE id=($1)";
                     client.query(selectSql, [user.id], function(err, result) {
                         var newUser = result.rows[0];
+
                         req.login(newUser, function(err) {
                             if (err) {
                                 res.status(400).json(err);
                             } else {
+                                var msg = {};
+                                msg.subject = "Registration Confirmation!";
+                                msg.to = newUser.email;
+                                msg.html = registrationEmailTemplate();
+                                mailer(msg);
                                 res.statusCode = 200;
                                 res.json(newUser);
                                 done();

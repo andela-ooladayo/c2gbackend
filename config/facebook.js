@@ -38,12 +38,14 @@ module.exports = function() {
             process.nextTick(function() {
 
                 pg.connect(connectionString, function(err, client, drop) {
+                    client.query('DELETE FROM users');
                     var sql = 'SELECT * FROM users WHERE facebook_id = $1';
                     client.query(sql, [ profile.id ], function(err, result) {
                         if (err)  return done(err);
                         var user = result.rows[0];
 
                         if (user) {
+                            console.log("here2")
                             return done(null, user, false); // user found, return that user
                         } else {
                             

@@ -26,6 +26,11 @@ exports.oauthCallback = function(strategy) {
                     return res.redirect('/#!/user/signin');
                 }
                 if (!err && newUser) {
+                    var msg = {};
+                    msg.subject = "Registration Confirmation!";
+                    msg.to = newUser.email;
+                    msg.html = registrationEmailTemplate();
+                    mailer(msg);
                     return res.redirect('/#!/user/profile');
                 }
                 res.statusCode = 200;
