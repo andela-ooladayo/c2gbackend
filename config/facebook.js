@@ -5,6 +5,7 @@ var passport = require('passport'),
     users = require('../app/controllers/users.server.controller'),
     pg = require('pg'),
     moment = require('moment'),
+    config = require('./config'),
     connectionString = process.env.DATABASE_URL || "postgres://dayo:nifemi00@localhost/c2gdb";
 
 
