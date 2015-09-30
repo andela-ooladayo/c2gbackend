@@ -16,16 +16,20 @@ exports.signout = function(req, res) {
 // Oauth Authentication method
 exports.oauthCallback = function(strategy) {
     return function(req, res, next) {
-        passport.authenticate(strategy, function(err, user, redirectURL) {
+        passport.authenticate(strategy, function(err, user, newUser, redirectURL) {
             if (err || !user) {
                 return res.redirect('/#!/user/signin');
             }
             req.login(user, function(err) {
+                console.log("here");
                 if (err) {
                     return res.redirect('/#!/user/signin');
                 }
+                if (!err && newUser) {
+                    return res.redirect('/#!/user/profile');
+                }
                 res.statusCode = 200;
-                return res.json({"message" : "login successfully"});
+                return res.json(user);
             });
         })(req, res, next);
     };

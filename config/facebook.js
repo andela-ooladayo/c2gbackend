@@ -10,6 +10,22 @@ var passport = require('passport'),
 
 
 module.exports = function() {
+
+    // Serialize sessions
+    passport.serializeUser(function(user, done) {
+        done(null, user.id);
+    });
+
+    // Deserialize sessions
+    passport.deserializeUser(function(id, done) {
+        pg.connect(connectionString, function(err, client, next) {
+            var sql = 'SELECT * FROM users WHERE id = $1';
+            client.query(sql, [id], function(err, result) {
+                done(err, result.rows[0]);
+            });
+        });
+    });
+
     // Use facebook strategy
     passport.use(new FacebookStrategy({
             clientID: config.facebook.clientID,
@@ -28,8 +44,7 @@ module.exports = function() {
                         var user = result.rows[0];
 
                         if (user) {
-                            console.log(user);
-                            return done(null, user); // user found, return that user
+                            return done(null, user, false); // user found, return that user
                         } else {
                             
                             var firstName = profile.name.givenName || "";
@@ -52,13 +67,12 @@ module.exports = function() {
                                 var sql = "INSERT INTO users(facebook_id, firstname, lastname, state, sex, occupation, residential_address, email, date_of_birth, picture_url, added_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)";
                                 client.query(sql, [profile.id, firstName, lastName, state, sex, occupation, address, email, dateofBirth, pictureUrl,addedAt], function(err, result) {
                                     if (err) {
-                                        console.log(err);
                                         return done(err);
                                     } else {
                                         var sql = 'SELECT * FROM users WHERE facebook_id = $1';
                                         client.query(sql, [ profile.id ], function(err, result) {
                                             drop();
-                                            return done(null, result.rows[0]);
+                                            return done(null, result.rows[0], true);
                                         });
                                     }
                                 });

@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 var passport = require('passport');
 var session = require('express-session');
-
+var expressValidator = require('express-validator');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
@@ -16,21 +16,23 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-app.use(session({ 
-    secret: 'atlassecuritychecksession',
-    resave: true,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 300000 }
-}));
-
-app.use(passport.initialize());
-app.use(passport.session());
-
+app.use(expressValidator());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.use(session({ 
+    secret: 'secure',
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false}
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use('/', routes);
 app.use('/users', users);
