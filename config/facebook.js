@@ -2,11 +2,11 @@
 
 var passport = require('passport'),
     FacebookStrategy = require('passport-facebook').Strategy,
-    users = require('../app/controllers/users.server.controller'),
+    users = require('../app/controllers/user.authentication.server'),
     pg = require('pg'),
     moment = require('moment'),
     config = require('./config'),
-    connectionString = process.env.DATABASE_URL || "postgres://dayo:nifemi00@localhost/c2gdb";
+    connectionString = process.env.DATABASE_URL || "postgres://localhost:5432/cgdb";
 
 
 module.exports = function() {
@@ -18,46 +18,44 @@ module.exports = function() {
             passReqToCallback: true
         },
         function(req, accessToken, refreshToken, profile, done) {
-    
+            
             process.nextTick(function() {
 
                 pg.connect(connectionString, function(err, client, drop) {
-                    var sql = 'SELECT * FROM atlas_users WHERE facebook_id = $1';
+                    var sql = 'SELECT * FROM users WHERE facebook_id = $1';
                     client.query(sql, [ profile.id ], function(err, result) {
                         if (err)  return done(err);
                         var user = result.rows[0];
 
                         if (user) {
+                            console.log(user);
                             return done(null, user); // user found, return that user
                         } else {
-                        
-                            var name,
-                                email,
-                                provider = 'facebook';
+                            
+                            var firstName = profile.name.givenName || "";
+                            var lastName = profile.name.familyName || "";
+                            var pictureUrl = "";
+                            var sex = "";
+                            var dateofBirth = null;
+                            var occupation = "";
+                            var state = "";
+                            var address = "";
+                            var addedAt = moment();
 
-                            if (profile.name.givenName && profile.name.familyName) {
-                                name = profile.name.givenName + " " + profile.name.familyName ;
-                            }
-                            else {
-                                name = profile.name.givenName || profile.name.familyName || "";
-                            }
-
-                            if(profile.emails) {
-                                email = profile.emails[0].value;
-                            }
-                            else {
-                                email = "";
+                            if (profile.emails) {
+                                var email = profile.emails[0].value || "";
+                            } else {
+                                var email = "";
                             }
 
-                            var signupTimestamp = moment();
                             pg.connect(connectionString, function(err, client, drop) {
-                                var sql = "INSERT INTO atlas_users(name, email, facebook_id, signup_timestamp, provider) values($1, $2, $3, $4, $5)";
-                                client.query(sql, [name, email, profile.id, signupTimestamp, provider], function(err, result) {
+                                var sql = "INSERT INTO users(facebook_id, firstname, lastname, state, sex, occupation, residential_address, email, date_of_birth, picture_url, added_at) values($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)";
+                                client.query(sql, [profile.id, firstName, lastName, state, sex, occupation, address, email, dateofBirth, pictureUrl,addedAt], function(err, result) {
                                     if (err) {
                                         console.log(err);
                                         return done(err);
                                     } else {
-                                        var sql = 'SELECT * FROM atlas_users WHERE facebook_id = $1';
+                                        var sql = 'SELECT * FROM users WHERE facebook_id = $1';
                                         client.query(sql, [ profile.id ], function(err, result) {
                                             drop();
                                             return done(null, result.rows[0]);

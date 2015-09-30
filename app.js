@@ -4,6 +4,8 @@ var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
+var passport = require('passport');
+var session = require('express-session');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');
@@ -14,6 +16,15 @@ var app = express();
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
+app.use(session({ 
+    secret: 'atlassecuritychecksession',
+    resave: true,
+    saveUninitialized: true,
+    cookie: { secure: false, maxAge: 300000 }
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
 
 app.use(logger('dev'));
 app.use(bodyParser.json());
@@ -56,6 +67,10 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
+
+
+// Bootstrap facebook passport config
+require('./config/facebook')();
 
 
 module.exports = app;
