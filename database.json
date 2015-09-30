@@ -1,0 +1,20 @@
+{
+  "dev": {
+    "driver": "pg",
+    "user": "dayo",
+    "password": "nifemi00",
+    "host": "localhost",
+    "database": "c2gdb"
+  },
+
+  "prod": {
+    "driver": "pg",
+    "user": "",
+    "password": "",
+    "host": "",
+    "database": "",
+    "schema": ""
+  },
+
+  "one_line": "postgres://dayo:nifemi00@server.com/c2gdb"
+}
